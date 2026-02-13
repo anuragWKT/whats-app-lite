@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Lite (Go + WebSocket)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #dcdcdc;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+            align-items: center;
+        }
+
+        #app {
+            width: 400px;
+            height: 600px;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        #login-view {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            justify-content: center;
+            height: 100%;
+        }
+
+        input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #25d366;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #128c7e;
+        }
+
+        #chat-view {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        #header {
+            background-color: #128c7e;
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #status {
+            font-size: 12px;
+            font-weight: normal;
+            opacity: 0.8;
+        }
+
+        #message-log {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background-color: #e5ddd5;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.4;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .my-message {
+            align-self: flex-end;
+            background-color: #dcf8c6;
+        }
+
+        .other-message {
+            align-self: flex-start;
+            background-color: white;
+        }
+
+        .system-message {
+            align-self: center;
+            background-color: rgba(255, 255, 255, 0.6);
+            font-size: 11px;
+            color: #555;
+            padding: 4px 8px;
+            border-radius: 10px;
+        }
+
+        .sender-name {
+            font-size: 10px;
+            color: #999;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        #input-area {
+            padding: 10px;
+            background: #f0f0f0;
+            display: flex;
+            gap: 10px;
+        }
+
+        #msg-input {
+            flex: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+        <div id="login-view">
+            <h2 style="text-align: center; color: #128c7e;">WhatsApp Lite</h2>
+            <input type="text" id="username" placeholder="Enter Username (e.g., Anurag)" autofocus>
+            <input type="text" id="room" placeholder="Enter Room (e.g., general)">
+            <button onclick="joinChat()">Join Room</button>
+        </div>
+
+        <div id="chat-view">
+            <div id="header">
+                <span id="room-display">Room: General</span>
+                <span id="status">Disconnected</span>
+            </div>
+            <div id="message-log">
+            </div>
+            <div id="input-area">
+                <input type="text" id="msg-input" placeholder="Type a message...">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

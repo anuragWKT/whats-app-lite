@@ -46,6 +46,9 @@ func main() {
 		serveWs(hub, w, r)
 	})
 
+	fs := http.FileServer(http.Dir("./web"))
+	http.Handle("/", fs)
+
 	log.Println("Server started on :8080")
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {

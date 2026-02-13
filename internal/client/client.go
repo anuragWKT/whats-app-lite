@@ -26,6 +26,7 @@ type Client struct {
 	broadcast  chan<- []byte
 	unregister chan<- *Client
 }
+
 func NewClient(conn *websocket.Conn, broadcast chan<- []byte, unregister chan<- *Client) *Client {
 	return &Client{
 		Conn:       conn,
@@ -37,6 +38,7 @@ func NewClient(conn *websocket.Conn, broadcast chan<- []byte, unregister chan<- 
 
 func (c *Client) ReadPump() {
 	defer func() {
+		log.Println("Client disconnected. Unregistering...")
 		c.unregister <- c
 		c.Conn.Close()
 	}()
@@ -47,14 +49,16 @@ func (c *Client) ReadPump() {
 		c.Conn.SetReadDeadline(time.Now().Add(pongWait))
 		return nil
 	})
+
 	for {
 		_, message, err := c.Conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error :%v", err)
+				log.Printf("error: %v", err)
 			}
 			break
 		}
+		
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
 		c.broadcast <- message
 	}
@@ -66,6 +70,7 @@ func (c *Client) WritePump() {
 		ticker.Stop()
 		c.Conn.Close()
 	}()
+
 	for {
 		select {
 		case message, ok := <-c.Send:
@@ -74,19 +79,23 @@ func (c *Client) WritePump() {
 				c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
+
 			w, err := c.Conn.NextWriter(websocket.TextMessage)
 			if err != nil {
 				return
 			}
 			w.Write(message)
+
 			n := len(c.Send)
 			for i := 0; i < n; i++ {
 				w.Write(newline)
 				w.Write(<-c.Send)
 			}
-			if err := c.Conn.Close(); err != nil {
+
+			if err := w.Close(); err != nil {
 				return
 			}
+			
 		case <-ticker.C:
 			c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
