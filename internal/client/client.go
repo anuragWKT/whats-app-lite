@@ -86,12 +86,6 @@ func (c *Client) WritePump() {
 			}
 			w.Write(message)
 
-			n := len(c.Send)
-			for i := 0; i < n; i++ {
-				w.Write(newline)
-				w.Write(<-c.Send)
-			}
-
 			if err := w.Close(); err != nil {
 				return
 			}
