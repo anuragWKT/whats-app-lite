@@ -96,7 +96,7 @@ function appendMessage(msg) {
     if (msg.recipient && msg.recipient !== "") {
         div.classList.add('private-message');
         div.innerHTML = `
-            <span class="sender-name">🔒 Private from ${msg.sender} to ${msg.recipient}</span>
+            <span class="sender-name"> Private from ${msg.sender} to ${msg.recipient}</span>
             ${msg.content}
         `;
         div.style.backgroundColor = "#fff3cd";

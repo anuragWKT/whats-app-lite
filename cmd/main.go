@@ -1,8 +1,13 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"whats-app-lite/internal/client"
@@ -36,29 +41,49 @@ func serveWs(hub *server.Hub, w http.ResponseWriter, r *http.Request) {
 	}
 
 	room := hub.GetOrCreateRoom(roomName)
-	
 	c := client.NewClient(conn, room.Broadcast, room.Unregister, username)
-	
 	room.Register <- c
-
 	go c.WritePump()
 	go c.ReadPump()
 }
 
 func main() {
-
 	hub := server.NewHub()
 
-	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
+	
+	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
 
 	fs := http.FileServer(http.Dir("./web"))
-	http.Handle("/", fs)
+	mux.Handle("/", fs)
 
-	log.Println("Server started on :8080")
-	err := http.ListenAndServe(":8080", nil)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
+	srv := &http.Server{
+		Addr:    ":8080",
+		Handler: mux,
 	}
+
+	go func() {
+		log.Println("Server started on :8080")
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("ListenAndServe error: %v", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	<-quit
+	log.Println("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal("Server forced to shutdown:", err)
+	}
+
+	log.Println("Server exited cleanly")
 }
