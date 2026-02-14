@@ -30,8 +30,15 @@ func serveWs(hub *server.Hub, w http.ResponseWriter, r *http.Request) {
 		roomName = "general"
 	}
 
+	username := r.URL.Query().Get("username")
+	if username == "" {
+		username = "Anonymous"
+	}
+
 	room := hub.GetOrCreateRoom(roomName)
-	c := client.NewClient(conn, room.Broadcast, room.Unregister)
+	
+	c := client.NewClient(conn, room.Broadcast, room.Unregister, username)
+	
 	room.Register <- c
 
 	go c.WritePump()

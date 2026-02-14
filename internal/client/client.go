@@ -25,17 +25,18 @@ type Client struct {
 	Send       chan []byte
 	broadcast  chan<- []byte
 	unregister chan<- *Client
+	Username string
 }
 
-func NewClient(conn *websocket.Conn, broadcast chan<- []byte, unregister chan<- *Client) *Client {
+func NewClient(conn *websocket.Conn, broadcast chan<- []byte, unregister chan<- *Client, username string) *Client {
 	return &Client{
 		Conn:       conn,
 		Send:       make(chan []byte, 256),
 		broadcast:  broadcast,
 		unregister: unregister,
+		Username:   username,
 	}
 }
-
 func (c *Client) ReadPump() {
 	defer func() {
 		log.Println("Client disconnected. Unregistering...")

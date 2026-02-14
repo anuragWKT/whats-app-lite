@@ -29,20 +29,13 @@ function joinChat() {
 
 function connectWebSocket() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws?room=${currentRoom}`;
+    const wsUrl = `${protocol}//${window.location.host}/ws?room=${currentRoom}&username=${currentUser}`;
     
     console.log("Connecting to:", wsUrl);
     socket = new WebSocket(wsUrl);
 
     socket.onopen = function(e) {
         statusSpan.textContent = "Connected";
-        const joinMsg = {
-            type: "system",
-            content: `${currentUser} joined the room`,
-            sender: "System",
-            room: currentRoom
-        };
-        // socket.send(JSON.stringify(joinMsg)); 
     };
 
     socket.onmessage = function(event) {
@@ -51,20 +44,12 @@ function connectWebSocket() {
             appendMessage(msg);
         } catch (e) {
             console.log("Received non-JSON message:", event.data);
-            appendMessage({
-                content: event.data,
-                sender: "Unknown",
-                type: "message"
-            });
         }
     };
 
     socket.onclose = function(event) {
         statusSpan.textContent = "Disconnected";
-        if (event.wasClean) {
-            console.log(`[close] Connection closed cleanly, code=${event.code}`);
-        } else {
-            console.log('[close] Connection died');
+        if (!event.wasClean) {
             alert("Connection lost. Please refresh.");
         }
     };
@@ -76,38 +61,62 @@ function connectWebSocket() {
 
 function sendMessage() {
     const input = document.getElementById('msg-input');
-    const content = input.value.trim();
+    const rawText = input.value.trim();
 
-    if (!content || !socket) return;
+    if (!rawText || !socket) return;
+
+    let type = "message";
+    let content = rawText;
+    let recipient = ""; 
+
+    if (rawText.startsWith("/msg ")) {
+        const parts = rawText.split(" ");
+        if (parts.length >= 3) {
+            recipient = parts[1];
+            content = parts.slice(2).join(" ");
+        }
+    }
 
     const messagePayload = {
-        type: "message",
+        type: type,
         sender: currentUser,
         content: content,
-        room: currentRoom
+        room: currentRoom,
+        recipient: recipient
     };
 
     socket.send(JSON.stringify(messagePayload));
-
     input.value = "";
-    
 }
 
 function appendMessage(msg) {
     const div = document.createElement('div');
     div.classList.add('message');
 
-    if (msg.sender === currentUser) {
-        div.classList.add('my-message');
-        div.textContent = msg.content;
-    } else {
-        div.classList.add('other-message');
-        div.innerHTML = `<span class="sender-name">${msg.sender}</span>${msg.content}`;
+    if (msg.recipient && msg.recipient !== "") {
+        div.classList.add('private-message');
+        div.innerHTML = `
+            <span class="sender-name">🔒 Private from ${msg.sender} to ${msg.recipient}</span>
+            ${msg.content}
+        `;
+        div.style.backgroundColor = "#fff3cd";
+        div.style.border = "1px solid #ffeeba";
+    } 
+
+    else {
+        if (msg.sender === currentUser) {
+            div.classList.add('my-message');
+            div.textContent = msg.content;
+        } else {
+            div.classList.add('other-message');
+            div.innerHTML = `<span class="sender-name">${msg.sender}</span>${msg.content}`;
+        }
     }
 
     messageLog.appendChild(div);
     messageLog.scrollTop = messageLog.scrollHeight;
 }
+
 document.getElementById('msg-input').addEventListener('keypress', function (e) {
     if (e.key === 'Enter') {
         sendMessage();
