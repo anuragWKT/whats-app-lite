@@ -1,4 +1,13 @@
-{"type":"message","sender":"Anurag Shetty","content":"hi","room":"general"}
-{"type":"message","sender":"Anurag Shetty","content":"helo","room":"general"}
-{"type":"message","sender":"Anurag Shetty","content":"hhehleh","room":"general"}
-{"type":"message","sender":"Anurag Shetty","content":"Secret for Bob","room":"general","recipient":"Bob"}
+{"type":"message","sender":"Anurag","content":"hello everyone","room":"general","recipient":""}
+{"type":"message","sender":"1234","content":"hi","room":"general","recipient":""}
+{"type":"message","sender":"Anurag","content":"hello","room":"general","recipient":""}
+{"type":"message","sender":"1234","content":"i","room":"general","recipient":""}
+{"type":"message","sender":"1234","content":"h","room":"general","recipient":""}
+{"type":"message","sender":"Anurag","content":"hi","room":"general","recipient":""}
+{"type":"message","sender":"Anurag","content":"hi","room":"general","recipient":"1234"}
+{"type":"message","sender":"12345","content":"hdfjshdfkjhskdhs","room":"general","recipient":"Anurag"}
+{"type":"message","sender":"Anurag","content":"hdjsdsj","room":"general","recipient":"sdsds"}
+{"type":"message","sender":"1234","content":"hi","room":"general","recipient":""}
+{"type":"message","sender":"1234","content":"hello","room":"general","recipient":"Anurag"}
+{"type":"message","sender":"12345","content":"xxxxxxxxxxxxxxx","room":"general","recipient":""}
+{"type":"message","sender":"12345","content":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","room":"general","recipient":""}

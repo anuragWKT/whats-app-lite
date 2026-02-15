@@ -1,7 +1,7 @@
 package models
 //the single piece of data exchanged between the client and the server
 type Message struct{
-	Type string `json:"type"`//indicates the action like join,leave,message,typing,private
+	Type string `json:"type"`
 	Sender string `json:"sender"`
 	Recipient string `json:"recipient,omitempty"`
 	Content string `json:"content"`

@@ -3,13 +3,16 @@ package storage
 import (
 	"bufio"
 	"os"
+	"sort"
+	"strings"
 	"sync"
 )
 
 type FileManager struct {
-	mu sync.Mutex
+	mu      sync.Mutex
 	baseDir string
 }
+
 func NewFileManager(baseDir string) *FileManager {
 	if _, err := os.Stat(baseDir); os.IsNotExist(err) {
 		_ = os.Mkdir(baseDir, 0755)
@@ -47,7 +50,7 @@ func (fm *FileManager) LoadHistory(roomName string) ([][]byte, error) {
 	filePath := fm.baseDir + "/" + roomName + ".log"
 	f, err := os.Open(filePath)
 	if os.IsNotExist(err) {
-		return nil, nil 
+		return nil, nil
 	}
 	if err != nil {
 		return nil, err
@@ -56,7 +59,6 @@ func (fm *FileManager) LoadHistory(roomName string) ([][]byte, error) {
 
 	var history [][]byte
 	scanner := bufio.NewScanner(f)
-	
 
 	for scanner.Scan() {
 		line := scanner.Bytes()
@@ -66,4 +68,31 @@ func (fm *FileManager) LoadHistory(roomName string) ([][]byte, error) {
 	}
 
 	return history, scanner.Err()
+}
+
+func (fm *FileManager) ListPersistedRooms() ([]string, error) {
+	fm.mu.Lock()
+	defer fm.mu.Unlock()
+
+	entries, err := os.ReadDir(fm.baseDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return []string{}, nil
+		}
+		return nil, err
+	}
+
+	rooms := make([]string, 0)
+	for _, e := range entries {
+		if e.IsDir() {
+			continue
+		}
+		name := e.Name()
+		if strings.HasSuffix(name, ".log") {
+			rooms = append(rooms, strings.TrimSuffix(name, ".log"))
+		}
+	}
+
+	sort.Strings(rooms)
+	return rooms, nil
 }

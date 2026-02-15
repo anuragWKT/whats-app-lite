@@ -40,7 +40,12 @@ func (r *Room) Run() {
 				log.Printf("Error loading history for room %s: %v", r.Name, err)
 			}
 
+			clientActive := true
 			for _, msgBytes := range history {
+				if !clientActive {
+					break
+				}
+
 				var msg models.Message
 				if err := json.Unmarshal(msgBytes, &msg); err != nil {
 					continue
@@ -56,6 +61,7 @@ func (r *Room) Run() {
 					default:
 						close(client.Send)
 						delete(r.clients, client)
+						clientActive = false
 					}
 				}
 			}
@@ -67,14 +73,16 @@ func (r *Room) Run() {
 			}
 
 		case message := <-r.Broadcast:
-			if err := r.Storage.SaveMessage(r.Name, message); err != nil {
-				log.Printf("Error saving message: %v", err)
-			}
-
 			var msg models.Message
 			if err := json.Unmarshal(message, &msg); err != nil {
 				log.Printf("Invalid JSON received: %v", err)
 				continue
+			}
+
+			if msg.Type != "typing" {
+				if err := r.Storage.SaveMessage(r.Name, message); err != nil {
+					log.Printf("Error saving message: %v", err)
+				}
 			}
 
 			if msg.Recipient != "" {
